@@ -167,6 +167,7 @@ struct SubscriptionEditorView: View {
     private var paymentMethods: [PaymentMethod]
 
     @State private var draft = SubscriptionDraft()
+    @State private var amountText = ""
     @State private var isLoaded = false
     @State private var isCreatingPaymentMethod = false
 
@@ -261,7 +262,10 @@ struct SubscriptionEditorView: View {
     private var billingSection: some View {
         Section("Billing") {
             HStack {
-                TextField("Amount", value: $draft.amount, format: .number.precision(.fractionLength(0...2)))
+                TextField("Amount", text: $amountText, prompt: Text("85.99"))
+                    .onChange(of: amountText) {
+                        draft.amount = AmountParser.parse(amountText) ?? 0
+                    }
                 Picker("Currency", selection: $draft.currencyCode) {
                     ForEach(exchangeRates.supportedCurrencyCodes, id: \.self) { code in
                         Text(code).tag(code)
@@ -427,6 +431,11 @@ struct SubscriptionEditorView: View {
         if case .edit(let id) = target, let subscription = fetchSubscription(id: id) {
             draft = SubscriptionDraft(subscription: subscription)
         }
+        // Seed the amount field with a plain, grouping-free string in the
+        // user's locale (the parser accepts either separator on edit).
+        amountText = draft.amount > 0
+            ? draft.amount.formatted(.number.precision(.fractionLength(0...2)).grouping(.never))
+            : ""
     }
 
     private func save() {
