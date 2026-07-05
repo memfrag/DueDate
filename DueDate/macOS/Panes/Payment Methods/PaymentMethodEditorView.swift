@@ -11,6 +11,10 @@ struct PaymentMethodEditorView: View {
 
     let target: PaymentMethodEditorTarget
 
+    /// Called with the saved record, so callers (like the subscription
+    /// editor's inline "New Payment Method…") can select it immediately.
+    var onSave: ((PaymentMethod) -> Void)?
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
@@ -114,6 +118,7 @@ struct PaymentMethodEditorView: View {
         paymentMethod.owner = owner
         paymentMethod.notes = notes
         try? modelContext.save()
+        onSave?(paymentMethod)
         dismiss()
     }
 

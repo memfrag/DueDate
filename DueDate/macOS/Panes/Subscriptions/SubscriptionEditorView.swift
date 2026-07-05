@@ -168,6 +168,7 @@ struct SubscriptionEditorView: View {
 
     @State private var draft = SubscriptionDraft()
     @State private var isLoaded = false
+    @State private var isCreatingPaymentMethod = false
 
     private var isNew: Bool {
         if case .new = target { true } else { false }
@@ -210,6 +211,11 @@ struct SubscriptionEditorView: View {
         .frame(width: 560, height: 680)
         .navigationTitle(isNew ? "Add Subscription" : "Edit Subscription")
         .onAppear(perform: load)
+        .sheet(isPresented: $isCreatingPaymentMethod) {
+            PaymentMethodEditorView(target: .new) { paymentMethod in
+                draft.paymentMethod = paymentMethod
+            }
+        }
     }
 
     // MARK: - Sections
@@ -308,9 +314,17 @@ struct SubscriptionEditorView: View {
                 Text("No").tag(false as Bool?)
             }
 
-            Picker("Renewal method", selection: $draft.renewalMethodKind) {
+            Picker(selection: $draft.renewalMethodKind) {
                 ForEach(RenewalMethodKind.allCases, id: \.self) { kind in
                     Text(kind.displayName).tag(kind)
+                }
+            } label: {
+                HStack(spacing: 5) {
+                    Text("Renewal method")
+                    HelpPopoverButton(
+                        title: "Renewal method",
+                        text: "How the subscription renews — the mechanism that triggers the charge, like a card on file, an App Store subscription, Autogiro, or a manual renewal you make yourself. It tells you where the renewal can be interrupted."
+                    )
                 }
             }
 
@@ -318,11 +332,33 @@ struct SubscriptionEditorView: View {
                 TextField("Renewal method name", text: $draft.renewalMethodOtherLabel)
             }
 
-            Picker("Payment method", selection: $draft.paymentMethod) {
-                Text("None").tag(nil as PaymentMethod?)
-                ForEach(paymentMethods) { paymentMethod in
-                    Text(paymentMethod.displayName).tag(paymentMethod as PaymentMethod?)
+            HStack {
+                Picker(selection: $draft.paymentMethod) {
+                    Text("None").tag(nil as PaymentMethod?)
+                    ForEach(paymentMethods) { paymentMethod in
+                        Text(paymentMethod.displayName).tag(paymentMethod as PaymentMethod?)
+                    }
+                } label: {
+                    HStack(spacing: 5) {
+                        Text("Payment method")
+                        HelpPopoverButton(
+                            title: "Payment method",
+                            text: "What actually pays — the card or account the money leaves, like “Visa Debit •••• 1234” or a PayPal account. Payment methods are reusable records shared across subscriptions, so you can see everything charged to one card. Use aliases, never full card numbers."
+                        )
+                    }
                 }
+                Button {
+                    isCreatingPaymentMethod = true
+                } label: {
+                    Label("New…", systemImage: "plus")
+                        .labelStyle(.titleOnly)
+                }
+                .help("Create a new payment method and select it")
+            }
+            if paymentMethods.isEmpty {
+                Text("No payment methods yet — create one with “New…”, e.g. “Visa Debit •••• 1234” or “PayPal”.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Picker("Managed through", selection: $draft.managedThroughKind) {
