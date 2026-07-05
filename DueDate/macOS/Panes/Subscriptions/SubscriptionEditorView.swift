@@ -262,7 +262,7 @@ struct SubscriptionEditorView: View {
     private var billingSection: some View {
         Section("Billing") {
             HStack {
-                TextField("Amount", text: $amountText, prompt: Text("85.99"))
+                TextField("Amount", text: $amountText, prompt: Text("0.00"))
                     .onChange(of: amountText) {
                         draft.amount = AmountParser.parse(amountText) ?? 0
                     }
