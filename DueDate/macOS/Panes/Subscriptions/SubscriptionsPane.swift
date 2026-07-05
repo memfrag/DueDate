@@ -85,6 +85,16 @@ struct SubscriptionsPane: View {
                     .monospacedDigit()
             }
 
+            TableColumn("Monthly Eq.", value: \.monthlyEquivalent) { subscription in
+                Text(
+                    subscription.monthlyEquivalent,
+                    format: .currency(code: subscription.currencyCode)
+                        .precision(.fractionLength(0...2))
+                )
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+            }
+
             TableColumn("Cycle", value: \.billingCycleName) { subscription in
                 Text(subscription.billingCycle.displayName)
             }
