@@ -161,7 +161,9 @@ struct Sidebar: View {
     }
 }
 
+#if DEBUG
 #Preview {
     Sidebar()
         .previewEnvironment()
 }
+#endif

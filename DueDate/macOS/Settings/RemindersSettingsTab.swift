@@ -34,7 +34,9 @@ struct RemindersSettingsTab: View {
     }
 }
 
+#if DEBUG
 #Preview {
     RemindersSettingsTab()
         .previewEnvironment()
 }
+#endif

@@ -40,8 +40,10 @@ struct SidebarFooter: View {
     }
 }
 
+#if DEBUG
 #Preview {
     SidebarFooter()
         .previewEnvironment()
         .frame(width: 220)
 }
+#endif

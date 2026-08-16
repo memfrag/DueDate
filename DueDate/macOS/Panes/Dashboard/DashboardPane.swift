@@ -260,9 +260,11 @@ struct DashboardListEmptyRow: View {
     }
 }
 
+#if DEBUG
 #Preview {
     DashboardPane()
         .environment(AppNavigationModel())
         .previewEnvironment()
         .frame(width: 900, height: 600)
 }
+#endif

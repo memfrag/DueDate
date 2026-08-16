@@ -170,8 +170,10 @@ struct StatusEntry: Identifiable {
     var id: String { status }
 }
 
+#if DEBUG
 #Preview {
     ReportsPane()
         .previewEnvironment()
         .frame(width: 900, height: 700)
 }
+#endif

@@ -50,8 +50,10 @@ struct SubscriptionsEmptyState: View {
     }
 }
 
+#if DEBUG
 #Preview {
     SubscriptionsEmptyState()
         .environment(AppNavigationModel())
         .previewEnvironment()
 }
+#endif

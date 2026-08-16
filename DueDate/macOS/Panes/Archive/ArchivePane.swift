@@ -84,8 +84,10 @@ struct ArchivePane: View {
     }
 }
 
+#if DEBUG
 #Preview {
     ArchivePane()
         .environment(AppNavigationModel())
         .previewEnvironment()
 }
+#endif

@@ -501,7 +501,9 @@ struct ReminderOffsetsField: View {
     }
 }
 
+#if DEBUG
 #Preview {
     SubscriptionEditorView(target: .new)
         .previewEnvironment()
 }
+#endif

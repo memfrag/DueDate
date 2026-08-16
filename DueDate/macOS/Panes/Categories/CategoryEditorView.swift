@@ -140,7 +140,9 @@ struct CategoryEditorView: View {
     }
 }
 
+#if DEBUG
 #Preview {
     CategoryEditorView(target: .new)
         .previewEnvironment()
 }
+#endif

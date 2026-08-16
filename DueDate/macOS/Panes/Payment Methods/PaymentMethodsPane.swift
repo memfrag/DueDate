@@ -194,8 +194,10 @@ enum PaymentMethodEditorTarget: Identifiable, Hashable {
     }
 }
 
+#if DEBUG
 #Preview {
     PaymentMethodsPane()
         .environment(AppNavigationModel())
         .previewEnvironment()
 }
+#endif

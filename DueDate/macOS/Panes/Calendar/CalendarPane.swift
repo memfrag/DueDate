@@ -139,8 +139,10 @@ struct CalendarPane: View {
     }
 }
 
+#if DEBUG
 #Preview {
     CalendarPane()
         .environment(AppNavigationModel())
         .previewEnvironment()
 }
+#endif

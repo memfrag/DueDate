@@ -117,7 +117,9 @@ enum CategoryEditorTarget: Identifiable, Hashable {
     }
 }
 
+#if DEBUG
 #Preview {
     CategoriesPane()
         .previewEnvironment()
 }
+#endif

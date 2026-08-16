@@ -130,7 +130,9 @@ struct PaymentMethodEditorView: View {
     }
 }
 
+#if DEBUG
 #Preview {
     PaymentMethodEditorView(target: .new)
         .previewEnvironment()
 }
+#endif

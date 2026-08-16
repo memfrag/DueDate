@@ -283,8 +283,10 @@ struct SubscriptionInspector: View {
     }
 }
 
+#if DEBUG
 #Preview {
     SubscriptionInspector()
         .environment(AppNavigationModel())
         .previewEnvironment()
 }
+#endif

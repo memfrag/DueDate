@@ -265,8 +265,10 @@ struct NextDueCell: View {
     }
 }
 
+#if DEBUG
 #Preview {
     SubscriptionsPane()
         .environment(AppNavigationModel())
         .previewEnvironment()
 }
+#endif
