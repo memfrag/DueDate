@@ -9,6 +9,10 @@ import Foundation
 /// strings to avoid floating-point drift. v1.1 import reads this back.
 nonisolated struct BackupFile: Codable, Sendable {
 
+    /// The highest format version this build can read. Bump only alongside a
+    /// reader that understands the new shape.
+    static let currentFormatVersion = 1
+
     var formatVersion: Int = 1
     var exportedAt: Date
     var settings: SettingsDTO
