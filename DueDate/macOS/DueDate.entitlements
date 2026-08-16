@@ -7,9 +7,13 @@
       ENABLE_OUTGOING_NETWORK_CONNECTIONS / ENABLE_USER_SELECTED_FILES build
       settings and are deliberately not repeated here.
 
-      The CloudKit container environment is inferred as Development for
-      development-signed builds, so it is not stated explicitly. See
-      DueDate-Release.entitlements for the distribution counterpart.
+      icloud-container-environment is stated explicitly rather than left to be
+      inferred. Debug builds belong in the Development database, where the
+      schema auto-creates; Production is frozen and append-only, so a model
+      change tried out in a debug build against it would be permanent. Which
+      environment an unannotated development-signed macOS build actually picks
+      is not something we could establish from the logs, so both configurations
+      say so outright. See DueDate-Release.entitlements for the counterpart.
     -->
     <key>com.apple.developer.icloud-container-identifiers</key>
     <array>
@@ -19,6 +23,8 @@
     <array>
         <string>CloudKit</string>
     </array>
+    <key>com.apple.developer.icloud-container-environment</key>
+    <string>Development</string>
     <key>com.apple.developer.aps-environment</key>
     <string>development</string>
 </dict>
