@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!--
+      Release (Developer ID) entitlements. Sandbox keys are injected by the
+      ENABLE_APP_SANDBOX / ENABLE_OUTGOING_NETWORK_CONNECTIONS /
+      ENABLE_USER_SELECTED_FILES build settings and are not repeated here.
+
+      Direct-distribution builds have no App Store to infer the CloudKit
+      environment from, so `icloud-container-environment` must say Production
+      explicitly, and `aps-environment` must be production or the shipped app
+      never registers for the silent pushes that drive prompt syncing.
+    -->
+    <key>com.apple.developer.icloud-container-identifiers</key>
+    <array>
+        <string>iCloud.io.apparata.DueDate</string>
+    </array>
+    <key>com.apple.developer.icloud-services</key>
+    <array>
+        <string>CloudKit</string>
+    </array>
+    <key>com.apple.developer.icloud-container-environment</key>
+    <string>Production</string>
+    <key>com.apple.developer.aps-environment</key>
+    <string>production</string>
+</dict>
+</plist>
