@@ -32,6 +32,9 @@ import KeyValueStore
         case reminderDefaultsTrial
         case reminderDefaultsManual
 
+        /// Whether the first-launch welcome has been dismissed.
+        case hasCompletedOnboarding
+
         // <-- (1 / 3) Add key for new property here
     }
 
@@ -90,6 +93,12 @@ import KeyValueStore
             .filter { $0 >= 0 }
     }
 
+    /// Whether the first-launch welcome has been shown and dismissed
+    /// (spec Section 29). Set once the user picks a path or skips.
+    public var hasCompletedOnboarding: Bool {
+        didSet { store.save(hasCompletedOnboarding, for: .hasCompletedOnboarding) }
+    }
+
     // <-- (2 / 3) Add property for new property here
 
     // MARK: Setup
@@ -111,6 +120,8 @@ import KeyValueStore
         reminderDefaultsAnnual = self.store.load(.reminderDefaultsAnnual, default: "30, 7")
         reminderDefaultsTrial = self.store.load(.reminderDefaultsTrial, default: "3")
         reminderDefaultsManual = self.store.load(.reminderDefaultsManual, default: "30, 14")
+
+        hasCompletedOnboarding = self.store.load(.hasCompletedOnboarding, default: false)
 
         // <-- (3 / 3) Add initializer for new property here.
     }

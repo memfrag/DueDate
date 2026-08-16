@@ -1164,6 +1164,10 @@ DueDate should look and feel like a polished native macOS app.
 
 ### First Launch and Sample Data
 
+On first launch a **welcome sheet** introduces the app in one screen: what DueDate tracks, the display currency (the one setting worth choosing before any data exists), and the same two paths the empty state offers. It is dismissible with **Skip for Now**, and nothing is seeded and no permission requested unless the user asks.
+
+It is shown only to a genuinely new store. If subscriptions already exist — an established install picking up a newer build — the welcome is marked complete silently rather than greeting an existing user as a newcomer.
+
 - The empty state offers two clear paths: **"Add your first subscription"** or **"Explore with sample data"**.
 - Sample data is strictly **opt-in** — nothing is seeded unless the user chooses it.
 - Sample entries are visibly flagged as samples (`isSampleData`) and removable in a single action ("Remove sample data"), so demo entries can never be mistaken for or tangled with real subscriptions.

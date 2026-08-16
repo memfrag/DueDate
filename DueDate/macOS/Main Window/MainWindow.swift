@@ -13,7 +13,7 @@ struct MainWindow: Scene {
     var body: some Scene {
 
         WindowGroup {
-            Sidebar()
+            RootView()
                 .frame(minWidth: 400, minHeight: 300)
                 .background(AlwaysOnTop())
                 .appEnvironment(.default)

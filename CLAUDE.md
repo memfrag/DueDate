@@ -79,9 +79,11 @@ stored directly, so `Subscription` stores **raw scalar fields** (`statusRaw`,
 Each associated-value enum has a `String`-backed `*Kind` mirror that also drives
 editor `Picker`s.
 
-**Navigation.** `Sidebar` owns an `AppNavigationModel` (`@Observable`: sidebar
-selection, selected subscription id, modal editor target) injected via
-`.environment`. `SidebarPane` enum drives a `NavigationSplitView` detail switch;
+**Navigation.** `RootView` (the window's root) owns the `AppNavigationModel`
+(`@Observable`: sidebar selection, selected subscription id, modal editor
+target) and injects it via `.environment`; `Sidebar` reads it. Ownership sits at
+the root so the first-launch welcome can drive navigation too.
+`SidebarPane` enum drives a `NavigationSplitView` detail switch;
 smart views are `SidebarPane.smartView(SmartView)`. Gotcha: a sidebar
 `NavigationLink`'s `.badge()` must be applied to the link's **label**, not the
 link itself, or List selection silently breaks.
@@ -106,6 +108,14 @@ confirmation because deletions propagate through sync. Gotcha:
 fresh ids per store, so id-only matching duplicates all 16 built-ins on every
 restore onto an already-launched store. Call `NotificationManager.resync()`
 after importing.
+
+**Onboarding.** `RootView` hosts the first-launch welcome (`OnboardingView`) as
+a sheet, gated on `AppSettings.hasCompletedOnboarding`. A store that already has
+subscriptions is marked complete silently, so existing installs picking up a new
+build are never greeted as newcomers. The sheet lives in `RootView` rather than
+`Sidebar` because Sidebar already presents the editor and two `.sheet`
+modifiers on one view collapse to a single presentation — the same trap as the
+File menu exporters.
 
 **Read vs. write.** The right inspector (`SubscriptionInspector`) is strictly
 read-only. All mutation goes through the modal `SubscriptionEditorView` sheet,

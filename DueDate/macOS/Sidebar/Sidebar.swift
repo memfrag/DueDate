@@ -8,7 +8,9 @@ import SwiftUIToolbox
 
 struct Sidebar: View {
 
-    @State private var navigation = AppNavigationModel()
+    /// Owned by ``RootView`` and injected, so the first-launch welcome can
+    /// drive navigation too.
+    @Environment(AppNavigationModel.self) private var navigation
 
     @State private var isInspectorPresented: Bool = true
 
@@ -138,7 +140,6 @@ struct Sidebar: View {
         .sheet(item: $navigation.editorTarget) { target in
             SubscriptionEditorView(target: target)
         }
-        .environment(navigation)
         .task {
             BuiltInSeeder.seedIfNeeded(context: modelContext)
             RenewalScheduler.performRollover(context: modelContext)
@@ -164,6 +165,7 @@ struct Sidebar: View {
 #if DEBUG
 #Preview {
     Sidebar()
+        .environment(AppNavigationModel())
         .previewEnvironment()
 }
 #endif
