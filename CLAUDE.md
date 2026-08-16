@@ -23,6 +23,14 @@ xcodebuild -project DueDate.xcodeproj -scheme "DueDate (Debug)" -destination 'pl
   rates) already set — **no pbxproj edits are needed to add files**; the project
   uses `PBXFileSystemSynchronizedRootGroup`, so files created on disk appear in
   the target automatically.
+- Signing is **automatic** (team `DR5YAK7GKS`), and the iCloud/CloudKit +
+  push entitlements mean a provisioning profile is now required: pass
+  `-allowProvisioningUpdates` to `xcodebuild`. Entitlements live in two files —
+  `DueDate/macOS/DueDate.entitlements` (Debug, `aps-environment=development`)
+  and `DueDate-Release.entitlements` (Release, `aps-environment=production` +
+  `icloud-container-environment=Production`, both required for direct
+  distribution). Sandbox keys stay in the `ENABLE_*` build settings and are
+  merged in at sign time — don't duplicate them into the files.
 - **No unit test target.** Verify changes by running the app — see
   `.claude/skills/verify/SKILL.md` for the build → launch → UI-drive →
   screenshot recipe (accessibility scripting + CGEvent clicks; `print()` from
@@ -48,9 +56,18 @@ is also read directly from `Commands` (e.g. `ExportCommands`) which don't get th
 view-hierarchy environment.
 
 **SwiftData models** live in `DueDate/All Platforms/Model/` and are
-**CloudKit-compatible by construction** (v2.0 sync ships without migration): no
-`@Attribute(.unique)`, all relationships optional, a default on every stored
-property. This constraint is load-bearing — keep it when adding fields.
+**CloudKit-compatible by construction**: no `@Attribute(.unique)`, all
+relationships optional, a default on every stored property. This constraint is
+load-bearing — keep it when adding fields, because **iCloud sync is now on**:
+`ModelContainerFactory.make()` mirrors the store to the user's private CloudKit
+database (`cloudKitDatabase: .automatic`) and falls back to a local-only store
+if CloudKit is unavailable. In-memory containers (previews, mocks,
+`APP_ENVIRONMENT=mock`) are pinned to `.none` so they never touch iCloud. A
+model violation doesn't crash — it silently drops to the local fallback, so
+check the `com.apple.coredata` subsystem in Console when sync goes quiet.
+**Any model change must be re-promoted Development → Production in the CloudKit
+Console before shipping a build that relies on it**; the production schema is
+append-only.
 
 **Enum storage pattern (important).** Enums with associated values
 (`BillingCycle.custom`, `RenewalMethod.other`, `ManagedThrough.other`) can't be
@@ -68,6 +85,27 @@ selection, selected subscription id, modal editor target) injected via
 smart views are `SidebarPane.smartView(SmartView)`. Gotcha: a sidebar
 `NavigationLink`'s `.badge()` must be applied to the link's **label**, not the
 link itself, or List selection silently breaks.
+
+**Menu file import/export.** A `Commands` menu hosts **exactly one** SwiftUI
+presentation, and `ImportExportCommands` spends it on a single `.fileExporter`
+attached to the `Section` — driven by a `PendingExport` carrying document,
+content type, and filename. Both alternatives fail silently: two exporters
+stacked on one view collapse to the outermost (the inner menu item does nothing
+at all), and moving them onto the individual `Button`s stops *both* from
+presenting. Add a new export by extending `PendingExport`, never by adding a
+second exporter; both payloads share one `ExportDocument` type for the same
+reason. Import therefore uses AppKit (`ImportCoordinator`: `NSOpenPanel` +
+`NSAlert`), which has no such limit.
+
+**Backup import.** `ImportExportService+Import.swift` matches records by `UUID`
+(the model has no `@Attribute(.unique)` — CloudKit forbids it, so uniqueness is
+enforced in this write layer). Merge updates/inserts and never deletes;
+Replace All wipes first and restores settings, behind its own destructive
+confirmation because deletions propagate through sync. Gotcha:
+**built-in categories are matched by name, not id** — `BuiltInSeeder` generates
+fresh ids per store, so id-only matching duplicates all 16 built-ins on every
+restore onto an already-launched store. Call `NotificationManager.resync()`
+after importing.
 
 **Read vs. write.** The right inspector (`SubscriptionInspector`) is strictly
 read-only. All mutation goes through the modal `SubscriptionEditorView` sheet,

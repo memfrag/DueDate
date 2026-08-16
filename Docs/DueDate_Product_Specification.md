@@ -100,7 +100,7 @@ A user should be able to:
 
 ### Platform Baseline
 
-- **macOS 14+** (required by SwiftData)
+- **macOS 26+**
 - Distributed **directly** (outside the Mac App Store): Developer ID-signed, notarized, auto-updating via **Sparkle** with GitHub Releases
 - **App Sandbox enabled**, with two entitlements:
   - Outgoing network connections (exchange-rate fetching only — see Section 25)
@@ -729,13 +729,18 @@ Reminder: 60 days before
 
 ## 22. Data Model Sketch
 
-The model is implemented in **SwiftData** and must remain **CloudKit-compatible from day one**, even though iCloud sync ships later (Section 27). Concretely:
+The model is implemented in **SwiftData** and must remain **CloudKit-compatible**. Concretely:
 
 - No `@Attribute(.unique)` constraints
 - All relationships are optional
 - Every stored property has a sensible default value
 
-This makes enabling sync in v2.0 a configuration change rather than a schema migration.
+Holding to this from day one meant enabling sync was a configuration change rather than a schema migration. **iCloud sync is now enabled**: the store is mirrored to the user's private CloudKit database in container `iCloud.io.apparata.DueDate`, with a local-only fallback whenever CloudKit is unavailable (no iCloud account, unsigned build, or a model the mirroring layer rejects). The app is unaffected offline — the local store remains the source of truth and sync is eventual.
+
+The rules above are therefore load-bearing rather than aspirational: violating one makes the container fall back to local silently, with no user-visible error. Two operational consequences follow from CloudKit's schema lifecycle:
+
+- The **production schema is append-only**. Fields and record types can be added; they cannot be removed, renamed, or retyped. Evolve additively.
+- After **any** model change, the Development schema must be **promoted to Production** in the CloudKit Console before shipping a build that depends on it. Otherwise released users — who talk to Production — sync against a schema that lacks the new field.
 
 ### Subscription
 
@@ -931,7 +936,7 @@ Given a next billing date and billing cycle, generate upcoming charge dates roug
 
 - Swift
 - SwiftUI
-- **SwiftData** (macOS 14+ deployment target)
+- **SwiftData** (macOS 26 deployment target)
 - UserNotifications (`UNUserNotificationCenter`)
 - AppStorage / Settings scene
 - **Charts framework** for v1 reports
@@ -1005,11 +1010,15 @@ DueDate should be private by default.
 - No email scraping in MVP
 - No sensitive card or bank account numbers stored
 - Export available at any time
-- Optional iCloud sync later
+- iCloud sync stays within the user's own private database
 
-### The One Network Call: Exchange Rates
+### Network Activity
 
-The only network activity in v1 is the daily fetch of a **public exchange-rate table** (Section 24). This is compatible with the privacy goals because **no user data leaves the device**: the app downloads a generic rate table — it does not transmit subscription names, amounts, or anything derived from the user's data. When offline, cached rates are used and the app remains fully functional.
+Two things cross the network, and neither sends user data to DueDate or any third party:
+
+**Exchange rates.** A daily fetch of a **public exchange-rate table** (Section 24). The app downloads a generic rate table — it does not transmit subscription names, amounts, or anything derived from the user's data. When offline, cached rates are used and the app remains fully functional.
+
+**iCloud sync.** Subscription data is mirrored to the user's **own private CloudKit database** (Section 22), readable only by that Apple Account and never by us. It is still "no account required" in the sense that matters: signing into iCloud is the user's existing system-level state, and with no iCloud account the app falls back to a purely local store and works exactly as before. The local store remains the source of truth; sync is background and eventual.
 
 ### Sensitive Data Guidance
 
@@ -1025,13 +1034,24 @@ Examples:
 
 ### MVP Export
 
-- **JSON export** — a complete, **re-importable backup**: subscriptions, categories, payment methods, and settings, with IDs and relationships preserved. This is the format future import (v1.1+) will read back.
+- **JSON export** — a complete, **re-importable backup**: subscriptions, categories, payment methods, and settings, with IDs and relationships preserved.
 - **CSV export** — a flat, spreadsheet-friendly subscriptions table. Category and payment method are exported as **resolved display names** (text, not IDs), and a computed **monthly equivalent** column is included.
+
+### JSON Import (shipped)
+
+Reading a backup offers two modes, chosen after the file is picked and its contents summarized:
+
+- **Merge** — records are matched on their stored `UUID`: existing ones are updated, missing ones inserted, nothing is deleted. Idempotent, so importing the same file twice is a no-op the second time.
+- **Replace All** — every subscription, category and payment method is deleted first, then the backup is inserted, and the backup's settings are restored. Because deletions propagate through iCloud sync to every device, this mode requires a separate destructive confirmation.
+
+Two details the format forces:
+
+- The model carries no `@Attribute(.unique)` (CloudKit forbids it), so "one record per id" is enforced in the import layer rather than by the store.
+- **Built-in categories are matched by name, not id.** `BuiltInSeeder` seeds the 16 built-ins once per store with freshly generated ids, so the same "Streaming" has a different id on every device. Matching on id alone would duplicate all 16 whenever a backup is restored onto a store that has already launched — i.e. every restore onto a new Mac. The existing category survives and adopts the backup's id, so the two stores converge.
 
 ### Future Import
 
 - CSV import
-- JSON import (reads the backup format above)
 - App Store receipt import
 - Calendar import/export
 - Email parsing
@@ -1044,7 +1064,7 @@ Bank, email, and OCR integrations should not be part of the first version becaus
 
 ### Version 1.0
 
-- Native macOS SwiftUI app (macOS 14+)
+- Native macOS SwiftUI app (macOS 26+)
 - Local SwiftData database (CloudKit-ready model)
 - Manual subscription entry
 - Dashboard
@@ -1065,7 +1085,7 @@ Bank, email, and OCR integrations should not be part of the first version becaus
 ### Version 1.1
 
 - CSV import
-- JSON import (restore from backup)
+- ~~JSON import (restore from backup)~~ — shipped early; see Section 26
 - Price history
 - Calendar export
 - Attachments
@@ -1075,7 +1095,7 @@ Bank, email, and OCR integrations should not be part of the first version becaus
 
 ### Version 2.0
 
-- iCloud sync (enabled on the already-CloudKit-compatible model)
+- ~~iCloud sync (enabled on the already-CloudKit-compatible model)~~ — shipped early; see Section 22
 - iOS companion app
 - Smart import
 - Domain-specific tracking improvements
