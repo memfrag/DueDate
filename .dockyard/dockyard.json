@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "id": "io.apparata.DueDate",
+  "displayName": "DueDate",
+  "category": "Finance",
+  "summary": "Track subscriptions, bills and renewals.",
+  "assetPattern": "^DueDate-.*\\.dmg$"
+}
