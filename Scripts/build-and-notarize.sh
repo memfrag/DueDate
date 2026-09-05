@@ -235,8 +235,13 @@ echo "==> Signing for Sparkle..."
 # --- Prompt for release title ---
 if [ -n "$TITLE_ARG" ]; then
     RELEASE_TITLE="$TITLE_ARG"
-else
+elif [ -t 0 ]; then
     RELEASE_TITLE=$(prompt_for "==> Enter release title [$APP_NAME $VERSION]: " "$APP_NAME $VERSION" "Release title")
+else
+    # Unlike the version, the title has a safe default -- so take it rather than
+    # failing here, which would be after notarization has already succeeded.
+    RELEASE_TITLE="$APP_NAME $VERSION"
+    echo "==> Release title: $RELEASE_TITLE"
 fi
 
 # --- Create GitHub release ---
