@@ -3,6 +3,15 @@
     <channel>
         <title>DueDate</title>
         <item>
+            <title>1.1.0</title>
+            <pubDate>Sat, 05 Sep 2026 12:41:46 +0200</pubDate>
+            <sparkle:version>1.1.0</sparkle:version>
+            <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="https://github.com/memfrag/DueDate/releases/download/1.1.0/DueDate-1.1.0.dmg" length="4424237" type="application/octet-stream" sparkle:edSignature="hzxE2w+W8jlkdMjFj0n8oB0xKnmz95dyXME8TSpOj7ZqT5CatNTck0M2Y2xM86LBZz4ph+kJ7r931RdKiwNyBQ=="/>
+        </item>
+        <item>
             <title>1.0.0</title>
             <pubDate>Sat, 05 Sep 2026 11:53:57 +0200</pubDate>
             <sparkle:version>1.0.0</sparkle:version>
