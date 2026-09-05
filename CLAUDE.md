@@ -52,7 +52,7 @@ the container for all shared services: the SwiftData `ModelContainer`,
 in `MainWindow` injects the container + services into the environment;
 `AppEnvironment.mock()` gives previews/tests an in-memory container. Views reach
 services via `@Environment(ExchangeRateService.self)` etc. `AppEnvironment.default`
-is also read directly from `Commands` (e.g. `ExportCommands`) which don't get the
+is also read directly from `Commands` (e.g. `ImportExportCommands`) which don't get the
 view-hierarchy environment.
 
 **SwiftData models** live in `DueDate/All Platforms/Model/` and are
@@ -67,7 +67,20 @@ model violation doesn't crash — it silently drops to the local fallback, so
 check the `com.apple.coredata` subsystem in Console when sync goes quiet.
 **Any model change must be re-promoted Development → Production in the CloudKit
 Console before shipping a build that relies on it**; the production schema is
-append-only.
+append-only. Debug builds sync to Development, where the schema auto-creates, so
+the gap is invisible until users hit it. Check which record types each
+environment actually has — no Console needed, `cktool` is already authorized:
+
+```bash
+xcrun cktool export-schema --team-id DR5YAK7GKS \
+  --container-id iCloud.io.apparata.DueDate --environment PRODUCTION | grep "RECORD TYPE"
+```
+
+Production carrying only `Users` means nothing has been deployed yet; a synced
+release needs `CD_Subscription`, `CD_SubscriptionCategory`, and
+`CD_PaymentMethod` there too. Note that the CloudKit logs are no help here: the
+mirroring layer labels its scheduler activities `container=…:Production`
+regardless of the environment in use, so the label is not evidence of anything.
 
 **Enum storage pattern (important).** Enums with associated values
 (`BillingCycle.custom`, `RenewalMethod.other`, `ManagedThrough.other`) can't be
