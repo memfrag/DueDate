@@ -40,7 +40,8 @@ xcodebuild -project DueDate.xcodeproj -scheme "DueDate (Debug)" -destination 'pl
 Lint: SwiftLint 0.49.1 via Mint (`mint run realm/SwiftLint`), config in
 `.swiftlint.yml` (allowlist of rules; `force_try`/`force_unwrapping` are errors).
 
-Release: `DueDate/scripts/build-and-notarize.sh` archives, notarizes, builds a
+Release: `Scripts/build-and-notarize.sh` (run from anywhere; it resolves the
+repo root from its own location) archives, notarizes, builds a
 DMG, signs for Sparkle, and publishes a GitHub release + appcast to
 `memfrag/DueDate`. Sparkle auto-update is already wired in `Info.plist`.
 
