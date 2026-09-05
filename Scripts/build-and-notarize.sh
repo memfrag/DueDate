@@ -11,7 +11,11 @@ set -euo pipefail
 #   - Sparkle EdDSA keys in keychain (run: ./Sparkle-tools/bin/generate_keys)
 #
 # Usage:
-#   ./scripts/build-and-notarize.sh
+#   ./Scripts/build-and-notarize.sh [--version X.Y.Z] [--title "..."]
+#
+# Both values are prompted for when omitted. Supply them to run unattended;
+# with no controlling terminal, a missing value is an error rather than a
+# silently empty answer.
 # -----------------------------------------------------------------------------
 
 # --- Constants ---
@@ -36,6 +40,59 @@ error() {
     echo "ERROR: $1" >&2
     exit 1
 }
+
+usage() {
+    cat <<USAGE
+Usage: $(basename "$0") [options]
+
+Options:
+  -v, --version X.Y.Z   Version to release. Prompted for when omitted.
+  -t, --title "..."     GitHub release title. Defaults to "<app> <version>".
+  -h, --help            Show this help.
+USAGE
+}
+
+# Prompts for a value, or fails when there is no terminal to prompt on. Reading
+# from a non-tty would otherwise return empty and release the wrong thing.
+#   $1 prompt, $2 default (may be empty), $3 what is missing (for the error)
+prompt_for() {
+    local prompt="$1" fallback="$2" what="$3" reply
+    if [ ! -t 0 ]; then
+        error "$what not supplied and stdin is not a terminal. Pass it as an option (see --help)."
+    fi
+    read -rp "$prompt" reply
+    printf '%s' "${reply:-$fallback}"
+}
+
+VERSION_ARG=""
+TITLE_ARG=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -v|--version)
+            [ $# -ge 2 ] || error "--version requires a value."
+            VERSION_ARG="$2"; shift 2 ;;
+        --version=*)
+            VERSION_ARG="${1#*=}"; shift ;;
+        -t|--title)
+            [ $# -ge 2 ] || error "--title requires a value."
+            TITLE_ARG="$2"; shift 2 ;;
+        --title=*)
+            TITLE_ARG="${1#*=}"; shift ;;
+        -h|--help)
+            usage; exit 0 ;;
+        *)
+            usage >&2; error "Unknown argument: $1" ;;
+    esac
+done
+
+if [ -n "$VERSION_ARG" ] && ! printf '%s' "$VERSION_ARG" | grep -Eq '^[0-9]+(\.[0-9]+)*$'; then
+    error "Version must look like 1.2.3, got: $VERSION_ARG"
+fi
+
+# Fail before the build directory is wiped, rather than at the first prompt.
+if [ ! -t 0 ] && [ -z "$VERSION_ARG" ]; then
+    error "No terminal to prompt on. Pass --version (and optionally --title); see --help."
+fi
 
 # --- Clean and create build directory ---
 echo "==> Cleaning build directory..."
@@ -68,23 +125,27 @@ fi
 NEED_NEW_VERSION=false
 if [ -z "$LATEST_TAG" ]; then
     echo "    No existing releases found."
-    read -rp "    Enter version to release [$CURRENT_VERSION]: " VERSION
-    VERSION="${VERSION:-$CURRENT_VERSION}"
-else
-    if [ "$CURRENT_VERSION" = "$LATEST_TAG" ]; then
-        NEED_NEW_VERSION=true
-        echo "    Current version matches latest release."
-    fi
-    if [ "$NEED_NEW_VERSION" = true ]; then
-        read -rp "    Enter new version: " VERSION
-        if [ -z "$VERSION" ]; then
-            error "Version cannot be empty."
-        fi
-    else
-        read -rp "    Enter version to release [$CURRENT_VERSION]: " VERSION
-        VERSION="${VERSION:-$CURRENT_VERSION}"
-    fi
+elif [ "$CURRENT_VERSION" = "$LATEST_TAG" ]; then
+    NEED_NEW_VERSION=true
+    echo "    Current version matches latest release."
 fi
+
+if [ -n "$VERSION_ARG" ]; then
+    VERSION="$VERSION_ARG"
+elif [ "$NEED_NEW_VERSION" = true ]; then
+    # Re-releasing the current version would collide with the existing tag.
+    VERSION=$(prompt_for "    Enter new version: " "" "Version")
+else
+    VERSION=$(prompt_for "    Enter version to release [$CURRENT_VERSION]: " "$CURRENT_VERSION" "Version")
+fi
+
+if [ -z "$VERSION" ]; then
+    error "Version cannot be empty."
+fi
+if [ "$NEED_NEW_VERSION" = true ] && [ "$VERSION" = "$LATEST_TAG" ]; then
+    error "Version $VERSION is already released. Choose a new one."
+fi
+echo "    Releasing version: $VERSION"
 
 if [ "$VERSION" != "$CURRENT_VERSION" ]; then
     echo "==> Updating version to $VERSION..."
@@ -172,9 +233,10 @@ echo "==> Signing for Sparkle..."
 "$SPARKLE_TOOLS_DIR/bin/sign_update" "$DMG_PATH" || error "Sparkle signing failed."
 
 # --- Prompt for release title ---
-read -rp "==> Enter release title: " RELEASE_TITLE
-if [ -z "$RELEASE_TITLE" ]; then
-    RELEASE_TITLE="$APP_NAME $VERSION"
+if [ -n "$TITLE_ARG" ]; then
+    RELEASE_TITLE="$TITLE_ARG"
+else
+    RELEASE_TITLE=$(prompt_for "==> Enter release title [$APP_NAME $VERSION]: " "$APP_NAME $VERSION" "Release title")
 fi
 
 # --- Create GitHub release ---

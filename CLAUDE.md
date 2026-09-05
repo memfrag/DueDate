@@ -40,10 +40,14 @@ xcodebuild -project DueDate.xcodeproj -scheme "DueDate (Debug)" -destination 'pl
 Lint: SwiftLint 0.49.1 via Mint (`mint run realm/SwiftLint`), config in
 `.swiftlint.yml` (allowlist of rules; `force_try`/`force_unwrapping` are errors).
 
-Release: `Scripts/build-and-notarize.sh` (run from anywhere; it resolves the
-repo root from its own location) archives, notarizes, builds a
-DMG, signs for Sparkle, and publishes a GitHub release + appcast to
-`memfrag/DueDate`. Sparkle auto-update is already wired in `Info.plist`.
+Release: `Scripts/build-and-notarize.sh [--version X.Y.Z] [--title "..."]`
+(run from anywhere; it resolves the repo root from its own location) archives,
+notarizes, builds a DMG, signs for Sparkle, and publishes a GitHub release +
+appcast to `memfrag/DueDate`. Sparkle auto-update is already wired in
+`Info.plist`. Both values are prompted for when omitted; without a terminal a
+missing `--version` is an error, so it never releases a silently empty answer.
+The version lives in `MARKETING_VERSION` (the checked-in `Info.plist` carries no
+version keys — `GENERATE_INFOPLIST_FILE` supplies them).
 
 ## Architecture
 
