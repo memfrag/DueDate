@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>DueDate</title>
+        <item>
+            <title>1.0.0</title>
+            <pubDate>Sat, 05 Sep 2026 11:53:57 +0200</pubDate>
+            <sparkle:version>1.0.0</sparkle:version>
+            <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="https://github.com/memfrag/DueDate/releases/download/1.0.0/DueDate-1.0.0.dmg" length="4417891" type="application/octet-stream" sparkle:edSignature="FXTmKYEtel5NcJ2Jmf2nmHlgc7QgXci+RmfkgDmP5iGUnUmIMql5Ss3gInQokjJ8/ZFCYn1SP4Al5Zq31ynKBQ=="/>
+        </item>
+    </channel>
+</rss>
