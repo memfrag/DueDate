@@ -127,6 +127,18 @@ fresh ids per store, so id-only matching duplicates all 16 built-ins on every
 restore onto an already-launched store. Call `NotificationManager.resync()`
 after importing.
 
+**Demo mode.** `DemoMode` (macOS/Demo/) flips a `UserDefaults` flag and
+relaunches; `AppEnvironment.demo()` then builds an in-memory container
+(`cloudKitDatabase: .none`), in-memory `AppSettings`, and
+`MockExchangeRateProvider` — so a demo touches no real data, reaches no
+network, and syncs nothing, and converted totals are identical every run
+(reproducible screenshots). Unlike `mock()` it is **not** `#if DEBUG`: it ships.
+The flag is read while the environment is being built, which is why it lives in
+`UserDefaults` rather than `AppSettings`, and why switching requires the
+relaunch — the container is chosen once. `RootView` seeds the demo store on
+first launch (built-ins first; the samples reference categories by name) and
+marks the window `DueDate (Demo)` — title bar only, so screenshots stay clean.
+
 **Onboarding.** `RootView` hosts the first-launch welcome (`OnboardingView`) as
 a sheet, gated on `AppSettings.hasCompletedOnboarding`. A store that already has
 subscriptions is marked complete silently, so existing installs picking up a new

@@ -1172,6 +1172,17 @@ It is shown only to a genuinely new store. If subscriptions already exist — an
 - Sample data is strictly **opt-in** — nothing is seeded unless the user chooses it.
 - Sample entries are visibly flagged as samples (`isSampleData`) and removable in a single action ("Remove sample data"), so demo entries can never be mistaken for or tangled with real subscriptions.
 
+### Demo Mode
+
+A menu command switches the app into **demo mode**: an isolated, throwaway store seeded with the sample data set, for showing DueDate to someone or capturing screenshots without exposing real subscriptions.
+
+- **Nothing real is touched or visible.** The demo runs against its own in-memory store with CloudKit mirroring off, so demo entries never reach iCloud or the user's other devices, and nothing entered during a demo survives leaving it. Settings are in-memory too, so changing the display currency to show it off does not rewrite real preferences.
+- **Reproducible.** Exchange rates are fixed rather than fetched, so converted totals are identical on every run, and sample due dates are relative to today — a screenshot taken next year still reads "in 2 days".
+- **Unmistakable.** The window title reads `DueDate (Demo)`. The marker is confined to the title bar so screenshots of the content stay clean.
+- Entering and leaving both restart the app, since the store is chosen when the app launches.
+
+This is distinct from **opt-in sample data** (below), which seeds flagged entries into the user's real store. With sync enabled that data propagates to their other devices; demo mode is the right choice when the intent is to show the app rather than to explore it.
+
 ### Visual Style
 
 - Calm colors

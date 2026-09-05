@@ -27,6 +27,9 @@ extension AppEnvironment {
             return .mock()
         }
         #endif
+        if DemoMode.isEnabled {
+            return .demo()
+        }
         return .live()
     }
 }

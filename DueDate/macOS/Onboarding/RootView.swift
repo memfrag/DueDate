@@ -23,6 +23,9 @@ struct RootView: View {
     var body: some View {
         Sidebar()
             .environment(navigation)
+            // Unmistakable at a glance, so a demo is never mistaken for real
+            // data, but confined to the title bar so screenshots stay clean.
+            .navigationTitle(DemoMode.isEnabled ? "DueDate (Demo)" : "DueDate")
             .sheet(isPresented: $isShowingWelcome) {
                 OnboardingView(
                     onAddFirstSubscription: {
@@ -40,8 +43,18 @@ struct RootView: View {
                 .interactiveDismissDisabled()
             }
             .task {
+                seedDemoDataIfNeeded()
                 evaluateWelcome()
             }
+    }
+
+    /// Fills the throwaway demo store on first launch. Built-in categories go
+    /// in first because the samples reference them by name.
+    private func seedDemoDataIfNeeded() {
+        guard DemoMode.isEnabled else { return }
+        guard (try? modelContext.fetchCount(FetchDescriptor<Subscription>())) == 0 else { return }
+        BuiltInSeeder.seedIfNeeded(context: modelContext)
+        SampleDataService.seedSamples(context: modelContext)
     }
 
     /// Shows the welcome only to a genuinely new store. Anyone who already has
